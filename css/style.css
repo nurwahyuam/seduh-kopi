@@ -1,0 +1,84 @@
+*,
+body {
+  font-family: "Poppins", sans-serif;
+  margin: 0;
+  padding: 0;
+}
+.w300 {
+  font-family: "Winky Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  font-style: normal;
+}
+input:focus,
+input:active {
+  outline: none;
+}
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.5);
+  transition: background-color 0.3s ease, backdrop-filter 0.3s ease;
+}
+#carouselExampleSlidesOnly {
+  width: 100%;
+  height: 90vh;
+  overflow: hidden;
+}
+#carouselExampleSlidesOnly .carousel-item img {
+  object-fit: cover;
+  height: 100%;
+  width: 100%;
+}
+.carousel-caption-custom {
+  position: absolute;
+  top: 50%;
+  left: 5%;
+  transform: translateY(-50%);
+  z-index: 3;
+  color: white;
+  max-width: 90%;
+}
+.hover-effect:hover {
+  background-color: white;
+  border-color: #4a4947;
+  color: #4a4947;
+}
+#keranjangItems {
+  max-height: 300px;
+  overflow-y: auto;
+}
+@media (max-width: 768px) {
+  .carousel-caption-custom h1 {
+    font-size: 1.8rem;
+  }
+
+  .carousel-caption-custom p {
+    font-size: 1rem;
+  }
+
+  .carousel-caption-custom {
+    left: 2%;
+  }
+}
+
+@media (max-width: 576px) {
+  .carousel-caption-custom {
+    top: 60%;
+  }
+
+  .carousel-caption-custom h1 {
+    font-size: 1.5rem;
+  }
+
+  .carousel-caption-custom p {
+    font-size: 0.9rem;
+  }
+
+  .carousel-caption-custom a {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+  }
+}
