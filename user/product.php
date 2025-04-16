@@ -7,6 +7,11 @@ if (!isset($_SESSION['role'])) {
 } else if ($_SESSION['role'] === 'admin') {
   header("Location: ../admin/dashboard.php");
   exit;
+} else if (isset($_SESSION['start_time'])) {
+  $queryOrders = mysqli_query($conn, "SELECT * FROM orders WHERE user_id = $userId ORDER BY created_at DESC LIMIT 1");
+  $dataOrders = mysqli_fetch_assoc($queryOrders);
+  header("Location: payment.php?order_id=" . $dataOrders['id']);
+  exit;
 }
 
 include '../database/db.php';
@@ -53,6 +58,12 @@ $stmt = $conn->prepare($query);
 $stmt->bind_param($types, ...$params);
 $stmt->execute();
 $result = $stmt->get_result();
+
+// Ambil data notifikasi
+$userId = $_SESSION['id'];
+$query = mysqli_query($conn, "SELECT COUNT(*) AS unread FROM notifications WHERE user_id = $userId AND is_read = 0");
+$data = mysqli_fetch_assoc($query);
+$unreadCount = $data['unread'];
 ?>
 
 
@@ -132,7 +143,7 @@ $result = $stmt->get_result();
             </div>
 
             <div class="input-group input-group-sm">
-              <label class="input-group-text bg-dark text-light border-dark" for="active">Active</label>
+              <label class="input-group-text bg-dark text-light border-dark" for="active">Status</label>
               <select name="active" class="form-select focus-ring focus-ring-dark border-dark" id="active">
                 <option value="Active" <?= (!isset($_GET['active']) || $_GET['active'] == 'Active') ? 'selected' : '' ?>>Active</option>
                 <option value="Not Active" <?= (isset($_GET['active']) && $_GET['active'] == 'Not Active') ? 'selected' : '' ?>>Not Active</option>
@@ -168,11 +179,17 @@ $result = $stmt->get_result();
       <?php while ($row = mysqli_fetch_assoc($result)) { ?>
         <div class="col-lg-2 col-md-4 col-6 mb-3">
           <div class="card h-100 border-0 shadow-sm">
-            <img src="../<?= $row['image'] ?>" class="card-img-top" alt="<?= $row['name'] ?>">
+            <img src="../images/product/<?= $row['image'] ?>" class="card-img-top" alt="<?= $row['name'] ?>">
             <div class="card-body">
-              <h5 class="fw-semibold" style="font-size: 16px;"><?= $row['name'] ?></h5>
-              <p><span class=" badge bg-secondary rounded-pill"><?= $row['category'] ?></span></p>
-              <p class="fw-medium" style="font-size: 16px;">Rp.<?= number_format($row['price'], 2, ',', '.') ?></p>
+              <h5 class="fw-semibold" style="font-size: 14px;"><?= $row['name'] ?></h5>
+              <p><span class=" badge bg-secondary rounded-pill"><?= $row['category'] ?></span>
+                <?php if ($row['active'] == 1): ?>
+                  <span class=" badge bg-success rounded-pill">Active</span>
+                <?php else : ?>
+                  <span class=" badge bg-danger rounded-pill">Not Active</span>
+                <?php endif; ?>
+              </p>
+              <p class="fw-medium" style="font-size: 14px;">Rp.<?= number_format($row['price'], 2, ',', '.') ?></p>
               <button class="btn btn-dark btn-sm add-to-cart w-100" data-id="<?= $row['id'] ?>" data-name="<?= $row['name'] ?>" data-price="<?= $row['price'] ?>"><i class="bi bi-cart4"></i> Add to Cart</button>
             </div>
           </div>
@@ -193,6 +210,21 @@ $result = $stmt->get_result();
   include '../includes/footer.php';
   ?>
 
+  <script>
+    document.getElementById('notifBtn')?.addEventListener('click', function() {
+      fetch('../includes/mark_read.php')
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === "success") {
+            notifCount = document.getElementById('notifCount');
+            notifCount.classList.remove('.bagde', 'bg-danger');
+          } else {
+            console.error(data.message);
+          }
+        })
+        .catch(error => console.error("Gagal menghubungi server:", error));
+    });
+  </script>
   <?php
   $bootstrap = '../bootstrap/js/bootstrap.bundle.min.js';
   $js = '../js/script.js';

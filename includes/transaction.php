@@ -1,5 +1,7 @@
 <?php
 session_start();
+
+
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'user') {
   header("Location: login.php");
   exit();
@@ -33,7 +35,7 @@ if (!isset($_FILES["payment_proof"]) || $_FILES["payment_proof"]["error"] !== 0)
 }
 
 $payment_proof = $_FILES['payment_proof']['name'];
-$target_dir = "../images/bukti";
+$target_dir = "../images/bukti/";
 $imageFileType = strtolower(pathinfo($payment_proof, PATHINFO_EXTENSION));
 $new_filename = uniqid('bukti_') . '.' . $imageFileType;
 $final_path = $target_dir . $new_filename;
@@ -75,7 +77,7 @@ if (!is_dir($target_dir)) {
 // Upload & Simpan data
 if ($uploadOk === 1) {
   if (move_uploaded_file($_FILES["payment_proof"]["tmp_name"], $final_path)) {
-    $save_path = 'images/bukti/' . $new_filename; // simpan path relatif
+    $save_path = 'images/bukti/' . $new_filename;
     $sql = "INSERT INTO transactions (order_id, payment_method_id, amount, transaction_date, payment_proof, status, phone_number, address) 
             VALUES (?, ?, ?, NOW(), ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
@@ -83,6 +85,20 @@ if ($uploadOk === 1) {
 
     if ($stmt->execute()) {
       unset($_SESSION['start_time']);
+      $notifAdmin = "Order #$order_id telah berhasil checkout dan dibayar. Mohon dicek min";
+      $userQuerry = $conn->query("SELECT DISTINCT id FROM users WHERE role = 'admin'");
+      while ($user = $userQuerry->fetch_assoc()) {
+        $admin_id = $user['id'];
+        $addQuery = $conn->prepare("INSERT INTO notifications (user_id, message, is_read, created_at) VALUES (?, ?, 0, NOW())");
+        $addQuery->bind_param("is", $admin_id, $notifAdmin);
+        $addQuery->execute();
+      }
+      $user_id = $_SESSION['id'];
+      $notif = "Order #$order_id telah berhasil checkout dan pembayaran. Mohon tunggu konfirmasi lagi";
+      $addQuery = $conn->prepare("INSERT INTO notifications (user_id, message, is_read, created_at) VALUES (?, ?, 0, NOW())");
+      $addQuery->bind_param("is", $user_id, $notif);
+      $addQuery->execute();
+
       echo "<script>
               sessionStorage.setItem('toastMessage', 'Pembayaran berhasil dikirim. Tunggu konfirmasi dari admin.');
               window.location.href = '../user/index.php';

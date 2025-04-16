@@ -9,23 +9,23 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 include '../database/db.php';
 
 // Ambil ID produk dari URL
-$product_id = $_GET['id'];
+$payment_method_id = $_GET['id'];
 
 // Hapus produk dari database
-$sql = "DELETE FROM products WHERE id = ?";
+$sql = "DELETE FROM payment_methods WHERE id = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $product_id);
+$stmt->bind_param("i", $payment_method_id);
 
 if ($stmt->execute()) {
   echo "<script>
-  sessionStorage.setItem('toastMessageDelete', 'Product berhasil dihapuskan!');
-  window.location.href = '../admin/product.php';
+  sessionStorage.setItem('toastMessage', 'Payment Method berhasil dihapuskan!');
+  window.location.href = '../admin/payment_method.php';
 </script>";
     exit();
 } else {
   echo "<script>
-  sessionStorage.setItem('toastMessage', 'Error: " . $stmt->error . "');
-  window.location.href = '../admin/product.php';
+  sessionStorage.setItem('toastMessageDelete', 'Error: " . $stmt->error . "');
+  window.location.href = '../admin/payment_method.php';
 </script>";
 }
 

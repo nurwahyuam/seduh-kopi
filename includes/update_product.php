@@ -6,94 +6,82 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
   exit();
 }
 
-// Koneksi ke database
 include '../database/db.php';
 
-// Pastikan data id terkirim via POST
-if (!isset($_POST['id']) || empty($_POST['id'])) {
-  echo "Product tidak ditemukan.";
-  exit();
-}
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+  $id = $_POST['id'];
+  $name = htmlspecialchars(mysqli_real_escape_string($conn, $_POST['name']));
+  $category = htmlspecialchars(mysqli_real_escape_string($conn, $_POST['category']));
+  $description = htmlspecialchars(mysqli_real_escape_string($conn, $_POST['description']));
+  $price = htmlspecialchars(mysqli_real_escape_string($conn, $_POST['price']));
+  $active = $_POST['active'];
+  $image = $_FILES['image']['name'];
 
-// Ambil data dari form
-$id = $_POST['id'];
-$name = $_POST['name'];
-$description = $_POST['description'];
-$price = $_POST['price'];
-$category = $_POST['category'];
+  if (!empty($image)) {
+    $target_dir = "../images/product/";
+    $image_name = time() . '_' . basename($image);
+    $target_file = $target_dir . $image_name;
+    $image_tmp = $_FILES['image']['tmp_name'];
+    $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
 
-// Proses upload gambar jika ada
-$image = $_FILES['image']['name'];
-$target_dir = "images/";
-$uploadOk = 1;
-
-// Cek apakah file gambar diupload
-if (!empty($image)) {
-  $target_file = $target_dir . basename($image);
-  $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
-
-  // Cek apakah file gambar adalah gambar
-  $check = getimagesize($_FILES["image"]["tmp_name"]);
-  if ($check === false) {
-    echo "<script>
-  sessionStorage.setItem('toastMessage', 'File bukan gambar.');
-  window.location.href = '../admin/edit_product.php?id=" . $id . "';
-</script>";
-    exit();
-  }
-
-  // Cek ukuran file
-  if ($_FILES["image"]["size"] > 500000) { // 500 KB
-    echo "<script>
-  sessionStorage.setItem('toastMessage', 'Maaf, ukuran file terlalu besar.');
-  window.location.href = '../admin/edit_product.php?id=" . $id . "';
-</script>";
-    exit();
-  }
-
-  // Cek format file
-  if ($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg") {
-    echo "<script>
-  sessionStorage.setItem('toastMessage', 'Maaf, hanya file JPG, JPEG, PNG & GIF yang diperbolehkan.');
-  window.location.href = '../admin/edit_product.php?id=".$id."';
-</script>";
-exit();
-  }
-  if (!move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
-    echo "<script>
-  sessionStorage.setItem('toastMessage', 'Maaf, terjadi kesalahan saat mengupload file.');
-  window.location.href = '../admin/edit_product.php?id=".$id."';
+    if (getimagesize($_FILES["image"]["tmp_name"]) !== false) {
+      if ($_FILES["image"]["size"] < 1000000) {
+        if ($imageFileType == "jpg" || $imageFileType == "png" || $imageFileType == "jpeg") {
+          if (move_uploaded_file($image_tmp, $target_file)) {
+            $query = "UPDATE products 
+                            SET name = '$name', 
+                                description = '$description', 
+                                price = '$price', 
+                                image = '$image_name', 
+                                category = '$category', 
+                                active = '$active' 
+                            WHERE id = $id";
+          } else {
+            echo "<script>
+            sessionStorage.setItem('toastMessageDelete', 'Upload gagal.');
+            window.location.href = '../admin/product.php';</script>";
+          }
+        } else {
+          echo "<script>
+          sessionStorage.setItem('toastMessageDelete', 'Maaf, hanya file JPG, JPEG, PNG & GIF yang diperbolehkan.');
+          window.location.href = '../admin/product.php';
+        </script>";
+        }
+      } else {
+        echo "<script>
+        sessionStorage.setItem('toastMessageDelete', 'Maaf, ukuran file terlalu besar.');
+        window.location.href = '../admin/product.php';
+      </script>";
+      }
+    } else {
+      echo "<script>
+    sessionStorage.setItem('toastMessageDelete', 'File bukan gambar.');
+    window.location.href = '../admin/product.php';
   </script>";
-    exit();
+    }
+  } else {
+    $query = "UPDATE products 
+                      SET name = '$name', 
+                          description = '$description', 
+                          price = '$price', 
+                          category = '$category', 
+                          active = '$active' 
+                      WHERE id = $id";
   }
-
-  // Update data produk dengan gambar baru
-  $sql = "UPDATE products SET name = ?, description = ?, price = ?, image = ?, category = ? WHERE id = ?";
-  $stmt = $conn->prepare($sql);
-  $stmt->bind_param("ssdssi", $name, $description, $price, $target_file, $category, $id);
-} else {
-  // Update data produk tanpa mengubah gambar
-  $sql = "UPDATE products SET name = ?, description = ?, price = ?, category = ? WHERE id = ?";
-  $stmt = $conn->prepare($sql);
-  $stmt->bind_param("ssdsi", $name, $description, $price, $category, $id);
-}
-
-// Eksekusi query
-if ($stmt->execute()) {
-  echo "<script>
-  sessionStorage.setItem('toastMessage', 'Produk berhasil diperbarui!');
-  window.location.href = '../admin/product.php';
-</script>";
-  // Redirect ke halaman produk atau halaman lain setelah berhasil
-  // header("Location: ../admin/product.php");
-  exit();
+  if (mysqli_query($conn, $query)) {
+    echo "<script>
+      sessionStorage.setItem('toastMessage', 'Product berhasil diperbarui.');
+      window.location.href = '../admin/product.php';
+    </script>";
+  } else {
+    echo "<script>
+      sessionStorage.setItem('toastMessageDelete', 'Error: " . mysqli_error($conn) . "');
+      window.location.href = '../admin/product.php';
+    </script>";
+  }
 } else {
   echo "<script>
-  sessionStorage.setItem('toastMessage', 'Error: " . $stmt->error . "');
-  window.location.href = '../admin/edit_product.php?id=".$id."';
-  </script>";
+      sessionStorage.setItem('toastMessageDelete', 'Invalid Request.');
+      window.location.href = '../admin/product.php';
+    </script>";
 }
-
-$stmt->close();
-$conn->close();
-?>

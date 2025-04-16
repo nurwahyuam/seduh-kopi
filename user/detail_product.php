@@ -14,27 +14,13 @@ if (!isset($_SESSION['role'])) {
 
 include '../database/db.php';
 
-// Ambil data carousel
-$carousel_stmt = $conn->prepare("SELECT * FROM carousel");
-$carousel_stmt->execute();
-$carousel_result = $carousel_stmt->get_result();
-$carousel = $carousel_result->fetch_all(MYSQLI_ASSOC);
+$product_id = $_GET['id'];
 
-// Pagination produk
-$limit = 16;
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$offset = ($page - 1) * $limit;
-
-// Total produk
-$total_result = $conn->query("SELECT COUNT(*) AS total FROM products");
-$total_row = $total_result->fetch_assoc();
-$total_products = $total_row['total'];
-$total_pages = ceil($total_products / $limit);
 
 // Ambil data produk dengan limit dan offset
-$product_sql = "SELECT * FROM products LIMIT ?, ?";
+$product_sql = "SELECT * FROM products WHERE id = ?";
 $product_stmt = $conn->prepare($product_sql);
-$product_stmt->bind_param("ii", $offset, $limit);
+$product_stmt->bind_param("i", $product_id);
 $product_stmt->execute();
 $product_result = $product_stmt->get_result();
 
@@ -77,66 +63,34 @@ $dataOrders = mysqli_fetch_assoc($queryOrders);
   include '../includes/components/navbar.php';
   ?>
 
-  <!-- Hero Section (Carousel) -->
-  <div class="container pt-4">
-    <div id="customCarousel" class="carousel slide" data-bs-ride="carousel">
-      <!-- Indicators -->
-      <div class="carousel-indicators">
-        <?php foreach ($carousel as $index => $item): ?>
-          <button type="button" data-bs-target="#customCarousel" data-bs-slide-to="<?= $index ?>" class="<?= $index === 0 ? 'active' : '' ?>" aria-label="Slide <?= $index + 1 ?>"></button>
-        <?php endforeach; ?>
-      </div>
-
-      <!-- Slides -->
-      <div class="carousel-inner rounded-4 overflow-hidden">
-        <?php foreach ($carousel as $index => $item): ?>
-          <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
-            <img src="../images/carousel/<?= $item['image_url'] ?>" class="d-block w-100" style="object-fit: cover; height: 400px;" alt="<?= $item['title'] ?>">
-            <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-3">
-              <h5><?= $item['title'] ?></h5>
-              <p><?= $item['description'] ?></p>
-            </div>
-          </div>
-        <?php endforeach; ?>
-      </div>
-
-      <!-- Controls -->
-      <button class="carousel-control-prev" type="button" data-bs-target="#customCarousel" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Sebelumnya</span>
-      </button>
-      <button class="carousel-control-next" type="button" data-bs-target="#customCarousel" data-bs-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Berikutnya</span>
-      </button>
-    </div>
-  </div>
-
   <!-- Produk Section -->
   <section class="produk py-4">
     <div class="container">
       <div class="d-flex align-items-center justify-content-between mb-3">
-        <h2 class="text-center fw-semibold">All Products</h2>
+        <h2 class="text-center fw-semibold">Detail Product</h2>
         <a href="product.php" class="d-flex align-items-center gap-2">Shopping cart<i class="bi bi-arrow-right"></i></a>
       </div>
       <div class="row">
         <?php while ($row = $product_result->fetch_assoc()) { ?>
-          <div class="col-md-3 col-6 mb-4">
+          <div class="col-4">
             <div class="card h-100 border-0 shadow-sm">
               <img src="../images/product/<?= $row['image'] ?>" class="card-img-top" alt="<?= $row['name'] ?>">
-              <div class="card-body">
-                <h5 class="fw-semibold" style="font-size: 14px;"><?= $row['name'] ?></h5>
-                <p><span class=" badge bg-secondary rounded-pill"><?= $row['category'] ?></span>
+            </div>
+          </div>
+          <div class="col-8">
+          <div class="card-body">
+                <h5 class="fw-semibold fs-3"><?= $row['name'] ?></h5>
+                <p><span class="badge bg-secondary rounded-pill"><?= $row['category'] ?></span>
                   <?php if ($row['active'] == 1): ?>
                     <span class=" badge bg-success rounded-pill">Active</span>
                   <?php else : ?>
                     <span class=" badge bg-danger rounded-pill">Not Active</span>
                   <?php endif; ?>
                 </p>
-                <p class="fw-medium" style="font-size: 14px;">Rp.<?= number_format($row['price'], 2, ',', '.') ?></p>
-                <a href="detail_product.php?id=<?= $row['id'] ?>" class="btn btn-dark btn-sm w-100 d-flex align-items-center justify-content-center gap-2"><i class="bi bi-eye"></i> Detail Product</a>
+                <p class="fw-medium fs-5">Rp.<?= number_format($row['price'], 2, ',', '.') ?></p>
+                <p class="fw-normal"><?= $row['description'] ?></p>
+                <button class="btn btn-dark btn-sm add-to-cart w-100" data-id="<?= $row['id'] ?>" data-name="<?= $row['name'] ?>" data-price="<?= $row['price'] ?>"><i class="bi bi-cart4"></i> Add to Cart</button>
               </div>
-            </div>
           </div>
         <?php }; ?>
       </div>

@@ -2,8 +2,8 @@
 session_start();
 include '../database/db.php';
 
-$email = $_POST['email'];
-$password = $_POST['password'];
+$email = htmlspecialchars($_POST['email']);
+$password = htmlspecialchars($_POST['password']);
 
 // Query untuk mendapatkan data pengguna
 $sql = "SELECT * FROM users WHERE email='$email'";
@@ -14,6 +14,7 @@ if ($result->num_rows > 0) {
     // Verifikasi password
     if (password_verify($password, $user['password'])) {
         // Set session
+        $_SESSION['id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
         $_SESSION['email'] = $user['email'];
         $_SESSION['profile_photo'] = $user['profile_photo'];

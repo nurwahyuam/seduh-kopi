@@ -152,3 +152,15 @@ document.addEventListener("DOMContentLoaded", function () {
     sessionStorage.removeItem("toastMessageDelete");
   }
 });
+document.getElementById("notifButton")?.addEventListener("click", function () {
+  fetch("../includes/mark_read.php")
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.status === "success") {
+        document.querySelector(".badge.bg-danger")?.remove();
+      } else {
+        console.error(data.message);
+      }
+    })
+    .catch((error) => console.error("Gagal menghubungi server:", error));
+});

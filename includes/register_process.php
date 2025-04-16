@@ -2,9 +2,9 @@
 include '../database/db.php';
 
 if (isset($_POST['register'])) {
-  $username = $_POST['username'];
-  $email = $_POST['email'];
-  $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+  $username = htmlspecialchars($_POST['username']);
+  $email = htmlspecialchars($_POST['email']);
+  $password = htmlspecialchars(password_hash($_POST['password'], PASSWORD_DEFAULT));
   $role = 'user';
 };
 

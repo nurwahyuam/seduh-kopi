@@ -34,9 +34,10 @@ if ($orderResult->num_rows === 0) {
 }
 
 $order = $orderResult->fetch_assoc();
-$timeout = 900;
+$timeout = 600;
 $date = new DateTime($order['created_at']);
-
+$user_id = $_SESSION['id'];
+$notif = "Mohon Maaf, Order #$order_id telah Gagal dipembayaran. Mohon Checkout Ulang";
 
 if (!isset($_SESSION['start_time'])) {
     $_SESSION['start_time'] = time();
@@ -46,6 +47,9 @@ if (!isset($_SESSION['start_time'])) {
         $updateQuery = $conn->prepare("UPDATE orders SET status = 'expired' WHERE id = ?");
         $updateQuery->bind_param("i", $order_id);
         $updateQuery->execute();
+        $addQuery = $conn->prepare("INSERT INTO notifications (user_id, message, is_read, created_at) VALUES (?, ?, 0, NOW())");
+        $addQuery->bind_param("is", $user_id, $notif);
+        $addQuery->execute();
         unset($_SESSION['start_time']);
         echo "<script>sessionStorage.setItem('toastMessageDelete', 'Produk berhasil dihapuskan!'); window.location.href = 'product.php?session=expired';</script>";
         header("Location: product.php?session=expired");
@@ -89,6 +93,11 @@ $paymentsMethodsQuery = $conn->prepare("SELECT * FROM payment_methods");
 $paymentsMethodsQuery->execute();
 $paymentsMethodsResult = $paymentsMethodsQuery->get_result();
 
+// Ambil data notifikasi
+$userId = $_SESSION['id'];
+$query = mysqli_query($conn, "SELECT COUNT(*) AS unread FROM notifications WHERE user_id = $userId AND is_read = 0");
+$data = mysqli_fetch_assoc($query);
+$unreadCount = $data['unread'];
 ?>
 
 <!DOCTYPE html>
@@ -168,7 +177,7 @@ $paymentsMethodsResult = $paymentsMethodsQuery->get_result();
                             <?php while ($item = $result->fetch_assoc()): ?>
                                 <div class="d-flex justify-content-between align-items-start mb-3 border-bottom pb-2">
                                     <div class="d-flex align-items-center gap-3">
-                                        <img width="48px" height="48px" class="rounded-3" src="../<?= htmlspecialchars($item['product_image']) ?>" alt="<?= htmlspecialchars($item['product_name']) ?>">
+                                        <img width="48px" height="48px" class="rounded-3" src="../images/product/<?= htmlspecialchars($item['product_image']) ?>" alt="<?= htmlspecialchars($item['product_name']) ?>">
                                         <div>
                                             <strong><?= htmlspecialchars($item['product_name']) ?></strong><br>
                                             <small>Quantity: <?= htmlspecialchars($item['quantity']) ?></small>
@@ -225,22 +234,37 @@ $paymentsMethodsResult = $paymentsMethodsQuery->get_result();
     ?>
 
     <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      const toastMsg = sessionStorage.getItem("toastMessage");
-      if (toastMsg) {
-        document.getElementById("toastMessage").innerText = toastMsg;
-        new bootstrap.Toast(document.getElementById("liveToast")).show();
-        sessionStorage.removeItem("toastMessage");
-      }
-
-      const toastDeleteMsg = sessionStorage.getItem("toastMessageDelete");
-      if (toastDeleteMsg) {
-        document.getElementById("toastMessageDelete").innerText = toastDeleteMsg;
-        new bootstrap.Toast(document.getElementById("liveToastDelete")).show();
-        sessionStorage.removeItem("toastMessageDelete");
-      }
+    document.getElementById('notifBtn')?.addEventListener('click', function() {
+      fetch('../includes/mark_read.php')
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === "success") {
+            notifCount = document.getElementById('notifCount');
+            notifCount.classList.remove('.bagde', 'bg-danger');
+          } else {
+            console.error(data.message);
+          }
+        })
+        .catch(error => console.error("Gagal menghubungi server:", error));
     });
   </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const toastMsg = sessionStorage.getItem("toastMessage");
+            if (toastMsg) {
+                document.getElementById("toastMessage").innerText = toastMsg;
+                new bootstrap.Toast(document.getElementById("liveToast")).show();
+                sessionStorage.removeItem("toastMessage");
+            }
+
+            const toastDeleteMsg = sessionStorage.getItem("toastMessageDelete");
+            if (toastDeleteMsg) {
+                document.getElementById("toastMessageDelete").innerText = toastDeleteMsg;
+                new bootstrap.Toast(document.getElementById("liveToastDelete")).show();
+                sessionStorage.removeItem("toastMessageDelete");
+            }
+        });
+    </script>
 </body>
 
 </html>

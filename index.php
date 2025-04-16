@@ -51,7 +51,7 @@ $result = $stmt->get_result();
   $link = 'assets/logo.png';
   $navlink = [
     'index.php' => 'Home',
-    'product.php' => 'Products',
+    'login.php' => 'Products',
   ];
   $droplink = [
     'about_me.php' => 'About Me',
@@ -64,26 +64,27 @@ $result = $stmt->get_result();
   <div id="carouselExampleSlidesOnly" class="carousel slide" data-bs-ride="carousel">
     <div class="carousel-inner position-relative">
 
-      <!-- Konten Teks -->
-      <div class="carousel-caption-custom">
-        <span class="bagde bg-light text-dark fw-bold fs-6 px-4 py-2 mb-2 rounded-pill">Welcome to</span> 
-        <h1 class="fw-bold mt-3">Website UMKM SeduhKopi</h1>
-        <p class="lead fs-6">Kesempurnaan Rasa Dimulai dari Proses yang Sempurna, <br>Nikmatilah kopi terbaik dari UMKM lokal.</p>
-        <a href="#" class="btn btn-outline-light mt-2">Belanja Sekarang</a>
-      </div>
-
       <!-- Gambar -->
       <div class="carousel-item active">
         <img src="assets/img/gambar1.jpg" class="d-block w-100" alt="Gambar"
-          style="height: 100vh; object-fit: cover;">
+          style="height: 100vh; object-fit: cover; object-position: center;">
       </div>
 
+      <!-- Konten Teks -->
+      <div class="carousel-caption-custom">
+        <div class="container">
+          <span class="badge bg-light text-dark fw-bold fs-6 px-4 py-2 mb-2 rounded-pill">Welcome to</span>
+          <h1 class="fw-bold mt-3 text-white">Website UMKM SeduhKopi</h1>
+          <p class="lead fs-6 text-white">Kesempurnaan Rasa Dimulai dari Proses yang Sempurna,<br>Nikmatilah kopi terbaik dari UMKM lokal.</p>
+          <a href="#" class="btn btn-outline-light mt-2">Belanja Sekarang</a>
+        </div>
+      </div>
     </div>
   </div>
 
 
   <!-- Produk Section -->
-  <section class="produk py-5">
+  <section class="py-5">
     <div class="container">
       <div class="d-flex align-items-center justify-content-between mb-3">
         <h2 class="text-center fw-semibold">Trending Products</h2>
@@ -93,7 +94,7 @@ $result = $stmt->get_result();
         <?php while ($row = mysqli_fetch_assoc($result)) { ?>
           <div class="col-md-3 col-6">
             <div class="card border-0">
-              <img src="<?= $row['image'] ?>" class="card-img-top" alt="<?= $row['name'] ?>">
+              <img src="images/product/<?= $row['image'] ?>" class="card-img-top" alt="<?= $row['name'] ?>">
               <div class="card-body">
                 <h1 class="text-center text-dark fs-6"><?= $row['name'] ?></h1>
                 <p class="text-center"><span class=" badge bg-black rounded-pill"><?= $row['category'] ?></span></p>

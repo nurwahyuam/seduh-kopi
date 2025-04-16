@@ -50,11 +50,11 @@ if (!isset($_SESSION['role'])) {
       <form action="includes/auth.php" method="POST">
         <div class="mb-3">
           <label for="email" class="form-label">Email</label>
-          <input type="email" class="form-control focus-ring focus-ring-dark border rounded-2 py-2" style="font-size: 13px;" id="email" name="email" required>
+          <input type="email" class="form-control focus-ring focus-ring-dark border rounded-2 py-2" id="email" name="email" required>
         </div>
         <div class="mb-3">
           <label for="password" class="form-label">Password</label>
-          <input type="password" class="form-control focus-ring focus-ring-dark border rounded-2 py-2" style="font-size: 13px;" id="password" name="password" required>
+          <input type="password" class="form-control focus-ring focus-ring-dark border rounded-2 py-2" id="password" name="password" required>
         </div>
         <button type="submit" name="login" class="btn btn-dark w-100">Login</button>
         <div class="mt-2 form-text text-center" id="basic-addon4">Don't have an account? <a href="register.php" class="text-decoration-none link-body-emphasis link-offset-2">Sign up</a></div>

@@ -6,12 +6,13 @@ error_reporting(E_ALL);
 header('Content-Type: application/json');
 session_start();
 
+
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'user') {
     header("Location: login.php");
     exit();
 }
 
-$data = json_decode(file_get_contents('php://input'), true);
+$data = json_decode(file_get_contents("php://input"), true);
 
 // Validasi
 if (!$data || !is_array($data)) {
@@ -26,9 +27,9 @@ foreach ($data as $item) {
     $total += $item['price'] * $item['quantity'];
 }
 
+$userId = $_SESSION['id'];
 
 $stmt = $conn->prepare("INSERT INTO orders (user_id, total_amount, status, created_at) VALUES (?, ?, ?, NOW())");
-$userId = $_SESSION['user_id'] ?? 1;
 $status = 'pending';
 $stmt->bind_param("ids", $userId, $total, $status);
 $stmt->execute();
