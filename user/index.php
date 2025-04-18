@@ -7,9 +7,6 @@ if (!isset($_SESSION['role'])) {
 } else if ($_SESSION['role'] === 'admin') {
   header("Location: ../admin/dashboard.php");
   exit;
-} else if (isset($_SESSION['start_time'])) {
-  header("Location: ../.php");
-  exit;
 }
 
 include '../database/db.php';
@@ -71,8 +68,8 @@ $dataOrders = mysqli_fetch_assoc($queryOrders);
     'product.php' => 'Products',
   ];
   $droplink = [
-    '../about_me.php' => 'About Me',
-    '../contact.php' => 'Contact',
+    'about_me.php' => 'About Me',
+    'contact.php' => 'Contact',
   ];
   include '../includes/components/navbar.php';
   ?>

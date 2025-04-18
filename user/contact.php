@@ -1,77 +1,125 @@
+<?php
+session_start();
+
+if (!isset($_SESSION['role'])) {
+  header("Location: ../login.php");
+  exit;
+} else if ($_SESSION['role'] === 'admin') {
+  header("Location: ../admin/dashboard.php");
+  exit;
+}
+
+include '../database/db.php';
+
+// Ambil data notifikasi
+$userId = $_SESSION['id'];
+$query = mysqli_query($conn, "SELECT COUNT(*) AS unread FROM notifications WHERE user_id = $userId AND is_read = 0");
+$data = mysqli_fetch_assoc($query);
+$unreadCount = $data['unread'];
+?>
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Get in Touch</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background: #0d1117;
-            color: #c9d1d9;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .contact-container {
-            background: #161b22;
-            border-radius: 15px;
-            padding: 30px;
-            max-width: 900px;
-            width: 100%;
-            box-shadow: 0 0 25px rgba(0,0,0,0.4);
-        }
-        .form-control, .form-control:focus {
-            background-color: #0d1117;
-            border: 1px solid #30363d;
-            color: #c9d1d9;
-        }
-        .btn-primary {
-            background-color: #4f46e5;
-            border: none;
-        }
-        .btn-primary:hover {
-            background-color: #4338ca;
-        }
-    </style>
+    <?php
+    $title = 'Contact';
+    $link = '../assets/img/favicon.ico';
+    $css = '../css/style.css';
+    $bootstrap = '../bootstrap/css/bootstrap.min.css';
+    include '../includes/style.php';
+    ?>
 </head>
+
 <body>
+    <?php
+    $link = '../assets/logo.png';
+    $navlink = [
+        'index.php' => 'Home',
+        'product.php' => 'Products',
+    ];
+    $droplink = [
+        'about_me.php' => 'About Me',
+        'contact.php' => 'Contact',
+    ];
+    include '../includes/components/navbar.php';
+    ?>
 
-<div class="contact-container row g-4">
-    <div class="col-md-6">
-        <h2>Hubungi Kami</h2>
-        <p>Kami siap membantu Anda! Hubungi kami untuk pertanyaan, kerja sama, atau sekadar menyapa. Tim kami akan dengan senang hati membalas pesan Anda secepat mungkin.</p>
-        <ul class="list-unstyled">
-            <li><i class="bi bi-geo-alt"></i> Jl. Rungkut Madya, Rungkut, Surabaya</li>
-            <li><i class="bi bi-telephone"></i> 08123456789</li>
-            <li><i class="bi bi-envelope"></i> admin@gmail.com</li>
-        </ul>
-    </div>
-    <div class="col-md-6">
-        <form action="proses.php" method="POST">
-            <div class="row mb-3">
-                <div class="col">
-                    <input type="text" name="first_name" class="form-control" placeholder="First name" required>
-                </div>
-                <div class="col">
-                    <input type="text" name="last_name" class="form-control" placeholder="Last name" required>
-                </div>
+    <!-- Contact Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h1 class="fw-bold text-dark">Hubungi Kami</h1>
+                <p class="text-muted">Kami siap membantu Anda! Kirimkan pertanyaan, saran, atau sekadar menyapa kami.</p>
             </div>
-            <div class="mb-3">
-                <input type="email" name="email" class="form-control" placeholder="Email" required>
-            </div>
-            <div class="mb-3">
-                <input type="text" name="phone" class="form-control" placeholder="Phone number">
-            </div>
-            <div class="mb-3">
-                <textarea name="message" class="form-control" rows="4" placeholder="Message" required></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary">Send message</button>
-        </form>
-    </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.js"></script>
+            <div class="row g-5 align-items-start">
+                <div class="col-md-6">
+                    <div class="p-4 bg-white rounded-4 shadow h-100">
+                        <h3 class="fw-bold mb-4">Informasi Kontak</h3>
+                        <ul class="list-unstyled">
+                            <li class="mb-3">
+                                <i class="bi bi-geo-alt-fill text-dark me-2"></i> 
+                                <span>Jl. Rungkut Madya, Rungkut, Surabaya</span>
+                            </li>
+                            <li class="mb-3">
+                                <i class="bi bi-telephone-fill text-dark me-2"></i> 
+                                <span>0812-3456-789</span>
+                            </li>
+                            <li class="mb-3">
+                                <i class="bi bi-envelope-fill text-dark me-2"></i> 
+                                <span>admin@gmail.com</span>
+                            </li>
+                        </ul>
+                        <p class="mt-4 text-muted">Kami akan membalas pesan Anda sesegera mungkin selama jam kerja Senin - Jumat, pukul 09:00 - 17:00.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="p-4 bg-white rounded-4 shadow">
+                        <h3 class="fw-bold mb-4">Formulir Pesan</h3>
+                        <form action="proses.php" method="POST">
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <input type="text" name="first_name" class="form-control" placeholder="First Name" required>
+                                </div>
+                                <div class="col">
+                                    <input type="text" name="last_name" class="form-control" placeholder="Last Name" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <input type="email" name="email" class="form-control" placeholder="Email" required>
+                            </div>
+                            <div class="mb-3">
+                                <input type="text" name="phone" class="form-control" placeholder="Phone Number">
+                            </div>
+                            <div class="mb-3">
+                                <textarea name="message" class="form-control" rows="4" placeholder="Message" required></textarea>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-dark fw-semibold">Send</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <?php
+    $link = "../assets/logo.png";
+    $footlink = [
+        'index.php' => 'Home',
+        'about_me.php' => 'About Me',
+        'contact.php' => 'Contact',
+    ];
+    include '../includes/footer.php';
+    ?>
+
+    <?php
+    $bootstrap = '../bootstrap/js/bootstrap.bundle.min.js';
+    include '../includes/script.php';
+    ?>
 </body>
+
 </html>

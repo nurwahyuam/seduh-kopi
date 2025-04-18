@@ -7,11 +7,6 @@ if (!isset($_SESSION['role'])) {
 } else if ($_SESSION['role'] === 'admin') {
   header("Location: ../admin/dashboard.php");
   exit;
-} else if (isset($_SESSION['start_time'])) {
-  $queryOrders = mysqli_query($conn, "SELECT * FROM orders WHERE user_id = $userId ORDER BY created_at DESC LIMIT 1");
-  $dataOrders = mysqli_fetch_assoc($queryOrders);
-  header("Location: payment.php?order_id=" . $dataOrders['id']);
-  exit;
 }
 
 include '../database/db.php';
@@ -88,8 +83,8 @@ $unreadCount = $data['unread'];
     'product.php' => 'Products',
   ];
   $droplink = [
-    '../about_me.php' => 'About Me',
-    '../contact.php' => 'Contact',
+    'about_me.php' => 'About Me',
+    'contact.php' => 'Contact',
   ];
   include '../includes/components/navbar.php';
   ?>
