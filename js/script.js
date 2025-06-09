@@ -157,7 +157,7 @@ document.getElementById("notifButton")?.addEventListener("click", function () {
     .then((res) => res.json())
     .then((data) => {
       if (data.status === "success") {
-        document.querySelector(".badge.bg-danger")?.remove();
+        document.querySelector(".badge.bg-green")?.remove();
       } else {
         console.error(data.message);
       }

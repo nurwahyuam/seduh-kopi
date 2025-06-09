@@ -2,13 +2,13 @@
 session_start();
 
 if (isset($_SESSION['role'])) {
-  if ($_SESSION['role'] === 'admin') {
-    header("Location: admin/dashboard.php");
-    exit;
-  } else {
-    header("Location: user/index.php");
-    exit;
-  }
+    if ($_SESSION['role'] === 'admin') {
+        header("Location: admin/dashboard.php");
+        exit;
+    } else {
+        header("Location: user/index.php");
+        exit;
+    }
 }
 
 ?>
@@ -55,15 +55,15 @@ if (isset($_SESSION['role'])) {
                         <h3 class="fw-bold mb-4">Informasi Kontak</h3>
                         <ul class="list-unstyled">
                             <li class="mb-3">
-                                <i class="bi bi-geo-alt-fill text-dark me-2"></i> 
+                                <i class="bi bi-geo-alt-fill text-dark me-2"></i>
                                 <span>Jl. Rungkut Madya, Rungkut, Surabaya</span>
                             </li>
                             <li class="mb-3">
-                                <i class="bi bi-telephone-fill text-dark me-2"></i> 
+                                <i class="bi bi-telephone-fill text-dark me-2"></i>
                                 <span>0812-3456-789</span>
                             </li>
                             <li class="mb-3">
-                                <i class="bi bi-envelope-fill text-dark me-2"></i> 
+                                <i class="bi bi-envelope-fill text-dark me-2"></i>
                                 <span>admin@gmail.com</span>
                             </li>
                         </ul>
@@ -74,7 +74,7 @@ if (isset($_SESSION['role'])) {
                 <div class="col-md-6">
                     <div class="p-4 bg-white rounded-4 shadow">
                         <h3 class="fw-bold mb-4">Formulir Pesan</h3>
-                        <form action="proses.php" method="POST">
+                        <form action="includes/proses_pesan.php" method="POST">
                             <div class="row mb-3">
                                 <div class="col">
                                     <input type="text" name="first_name" class="form-control" placeholder="First Name" required>
@@ -102,6 +102,8 @@ if (isset($_SESSION['role'])) {
         </div>
     </section>
 
+    <?php include 'includes/components/toast.php' ?>
+
     <?php
     $link = "assets/logo.png";
     $footlink = [
@@ -112,10 +114,30 @@ if (isset($_SESSION['role'])) {
     include 'includes/footer.php';
     ?>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const toastMsg = sessionStorage.getItem("toastMessage");
+            if (toastMsg) {
+                document.getElementById("toastMessage").innerText = toastMsg;
+                new bootstrap.Toast(document.getElementById("liveToast")).show();
+                sessionStorage.removeItem("toastMessage");
+            }
+
+            const toastDeleteMsg = sessionStorage.getItem("toastMessageDelete");
+            if (toastDeleteMsg) {
+                document.getElementById("toastMessageDelete").innerText = toastDeleteMsg;
+                new bootstrap.Toast(document.getElementById("liveToastDelete")).show();
+                sessionStorage.removeItem("toastMessageDelete");
+            }
+        });
+    </script>
+
     <?php
     $bootstrap = 'bootstrap/js/bootstrap.bundle.min.js';
     include 'includes/script.php';
     ?>
+
+
 </body>
 
 </html>
