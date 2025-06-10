@@ -67,7 +67,7 @@ $unreadCount = $data['unread'];
                         Kami percaya, setiap biji kopi yang baik membawa cerita, tradisi, dan semangat dari para petani lokal.
                         Melalui proses seleksi, roasting, hingga penyajian yang penuh dedikasi, kami berkomitmen menghadirkan kopi dengan rasa terbaik untuk Anda.
                     </p>
-                    <a href="login.php" class="btn btn-dark rounded-pill px-4 py-2 fw-semibold">Belanja Kopi Sekarang</a>
+                    <a href="product.php" class="btn btn-dark rounded-pill px-4 py-2 fw-semibold">Belanja Kopi Sekarang</a>
                 </div>
             </div>
         </div>
