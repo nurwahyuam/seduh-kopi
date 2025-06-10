@@ -58,6 +58,10 @@ $userId = $_SESSION['id'];
 $query = mysqli_query($conn, "SELECT COUNT(*) AS unread FROM notifications WHERE user_id = $userId AND is_read = 0");
 $data = mysqli_fetch_assoc($query);
 $unreadCount = $data['unread'];
+
+// Ambil data orders
+$queryOrders = mysqli_query($conn, "SELECT * FROM orders WHERE user_id = $userId AND status = 'pending' ORDER BY created_at DESC LIMIT 1");
+$dataOrders = mysqli_fetch_assoc($queryOrders);
 ?>
 
 
