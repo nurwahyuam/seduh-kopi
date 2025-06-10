@@ -19,11 +19,10 @@ while ($cat = $category_result->fetch_assoc()) {
 }
 
 // Ambil parameter filter dan pencarian
-$search = isset($_GET['search']) ? '%' . $_GET['search'] . '%' : '%';
-$category = (isset($_GET['category']) && $_GET['category'] !== 'All') ? $_GET['category'] : '%';
-$priceOrder = isset($_GET['price']) ? $_GET['price'] : 'Latest';
-$active = isset($_GET['active']) ? $_GET['active'] : 'Active';
-
+$search = isset($_GET['search']) && $_GET['search'] !== '' ? '%' . $_GET['search'] . '%' : '%';
+$category = isset($_GET['category']) && $_GET['category'] !== 'All' ? $_GET['category'] : '%';
+$active = $_GET['active'] ?? 'Active';
+$priceOrder = $_GET['price'] ?? 'Latest';
 // Bangun query
 $query = "SELECT * FROM products WHERE name LIKE ? AND category LIKE ?";
 $params = [$search, $category];
@@ -94,7 +93,7 @@ $unreadCount = $data['unread'];
       <h1 class="fw-bold fs-3">E-Commerce UMKM SeduhKopi</h1>
       <p class="fs-6 text-wrap">Kopi yang Menggugah Selera, Setiap Seduhan adalah Cerita.</p>
       <div class="w-100 d-flex justify-content-center py-3">
-        <form class="d-flex w-50 gap-2" role="search" method="GET">
+        <form class="d-flex w-50" role="search" method="GET">
           <input name="search" class="form-control focus-ring focus-ring-light" type="search" placeholder="Search" aria-label="Search" value="<?= isset($_GET['search']) ? $_GET['search'] : '' ?>">
           <button class="d-none d-md-flex btn btn-outline-light" type="submit">Search</button>
         </form>
@@ -104,93 +103,83 @@ $unreadCount = $data['unread'];
     <!-- Category -->
     <form method="GET">
       <div class="row mb-3">
-        <div class="w-100 d-md-flex align-items-center justify-content-between gap-2">
-          <div class="w-25 d-none d-md-flex">
-            <div class="w-100 mb-2 mb-md-0 input-group input-group-sm">
-              <label class="input-group-text bg-dark text-light border-dark" for="category">Category</label>
-              <select name="category" class="form-select focus-ring focus-ring-dark border-dark" id="category">
-                <option value="All" <?= (!isset($_GET['category']) || $_GET['category'] == 'All') ? 'selected' : '' ?>>All</option>
-                <?php foreach ($categories as $cat) : ?>
-                  <option value="<?= $cat ?>" <?= (isset($_GET['category']) && $_GET['category'] == $cat) ? 'selected' : '' ?>><?= $cat ?></option>
-                <?php endforeach; ?>
-              </select>
-            </div>
+        <div class="w-100 d-flex flex-wrap align-items-center justify-content-between">
+
+          <!-- Category -->
+          <div class="input-group input-group-sm" style="max-width: 200px;">
+            <label class="input-group-text bg-dark text-light border-dark" for="category">Category</label>
+            <select name="category" class="form-select focus-ring focus-ring-dark border-dark" id="category">
+              <option value="All" <?= (!isset($_GET['category']) || $_GET['category'] == 'All') ? 'selected' : '' ?>>All</option>
+              <?php foreach ($categories as $cat) : ?>
+                <option value="<?= $cat ?>" <?= (isset($_GET['category']) && $_GET['category'] == $cat) ? 'selected' : '' ?>><?= $cat ?></option>
+              <?php endforeach; ?>
+            </select>
           </div>
-          <div class="w-100 d-md-none d-md-flex">
-            <div class="w-100 mb-2 mb-md-0 input-group input-group-sm">
-              <label class="input-group-text bg-dark text-light border-dark" for="category">Category</label>
-              <select name="category" class="form-select focus-ring focus-ring-dark border-dark" id="category">
-                <option value="All" <?= (!isset($_GET['category']) || $_GET['category'] == 'All') ? 'selected' : '' ?>>All</option>
-                <?php foreach ($categories as $cat) : ?>
-                  <option value="<?= $cat ?>" <?= (isset($_GET['category']) && $_GET['category'] == $cat) ? 'selected' : '' ?>><?= $cat ?></option>
-                <?php endforeach; ?>
-              </select>
-            </div>
-          </div>
-          <div class="w-50 d-none d-md-flex justify-content-end align-items-center gap-2">
-            <div class="input-group input-group-sm">
+
+          <div class="d-flex align-items-center justify-content-center gap-2">
+            <!-- Price -->
+            <div class="input-group input-group-sm" style="max-width: 180px;">
               <label class="input-group-text bg-dark text-light border-dark" for="price">Price</label>
               <select name="price" class="form-select focus-ring focus-ring-dark border-dark" id="price">
                 <option value="Latest" <?= (!isset($_GET['price']) || $_GET['price'] == 'Latest') ? 'selected' : '' ?>>Latest</option>
-                <option value="Low to High" <?= (isset($_GET['price']) && $_GET['price'] == 'Low to High') ? 'selected' : '' ?>>Low to High</option>
-                <option value="High to Low" <?= (isset($_GET['price']) && $_GET['price'] == 'High to Low') ? 'selected' : '' ?>>High to Low</option>
+                <option value="Low to High" <?= ($_GET['price'] ?? '') == 'Low to High' ? 'selected' : '' ?>>Low to High</option>
+                <option value="High to Low" <?= ($_GET['price'] ?? '') == 'High to Low' ? 'selected' : '' ?>>High to Low</option>
               </select>
             </div>
 
-            <div class="input-group input-group-sm">
+            <!-- Active -->
+            <div class="input-group input-group-sm" style="max-width: 180px;">
               <label class="input-group-text bg-dark text-light border-dark" for="active">Status</label>
               <select name="active" class="form-select focus-ring focus-ring-dark border-dark" id="active">
                 <option value="Active" <?= (!isset($_GET['active']) || $_GET['active'] == 'Active') ? 'selected' : '' ?>>Active</option>
-                <option value="Not Active" <?= (isset($_GET['active']) && $_GET['active'] == 'Not Active') ? 'selected' : '' ?>>Not Active</option>
-              </select>
-            </div>
-            <button type="submit" class="btn btn-dark btn-sm">Filter</button>
-          </div>
-          <div class="w-100 d-md-none d-flex justify-content-end align-items-center gap-2">
-            <div class="input-group input-group-sm">
-              <label class="input-group-text bg-dark text-light border-dark" for="price">Price</label>
-              <select name="price" class="form-select focus-ring focus-ring-dark border-dark" id="price">
-                <option value="Latest" <?= (!isset($_GET['price']) || $_GET['price'] == 'Latest') ? 'selected' : '' ?>>Latest</option>
-                <option value="Low to High" <?= (isset($_GET['price']) && $_GET['price'] == 'Low to High') ? 'selected' : '' ?>>Low to High</option>
-                <option value="High to Low" <?= (isset($_GET['price']) && $_GET['price'] == 'High to Low') ? 'selected' : '' ?>>High to Low</option>
+                <option value="Not Active" <?= ($_GET['active'] ?? '') == 'Not Active' ? 'selected' : '' ?>>Not Active</option>
               </select>
             </div>
 
-            <div class="input-group input-group-sm">
-              <label class="input-group-text bg-dark text-light border-dark" for="active">Active</label>
-              <select name="active" class="form-select focus-ring focus-ring-dark border-dark" id="active">
-                <option value="Active" <?= (!isset($_GET['active']) || $_GET['active'] == 'Active') ? 'selected' : '' ?>>Active</option>
-                <option value="Not Active" <?= (isset($_GET['active']) && $_GET['active'] == 'Not Active') ? 'selected' : '' ?>>Not Active</option>
-              </select>
-            </div>
             <button type="submit" class="btn btn-dark btn-sm">Filter</button>
+            <a href="product.php" class="btn btn-danger btn-sm">Reset</a>
           </div>
         </div>
       </div>
     </form>
 
+
     <!-- Product Cards -->
-    <div class="row row-cols-lg-6 row-cols-md-4 row-cols-2">
-      <?php while ($row = mysqli_fetch_assoc($result)) { ?>
-        <div class="col-lg-2 col-md-4 col-6 mb-3">
-          <div class="card h-100 border-0 shadow-sm">
-            <img src="../images/product/<?= $row['image'] ?>" class="card-img-top" alt="<?= $row['name'] ?>">
-            <div class="card-body">
-              <h5 class="fw-semibold" style="font-size: 14px;"><?= $row['name'] ?></h5>
-              <p><span class=" badge bg-secondary rounded-pill"><?= $row['category'] ?></span>
-                <?php if ($row['active'] == 1): ?>
-                  <span class=" badge bg-success rounded-pill">Active</span>
-                <?php else : ?>
-                  <span class=" badge bg-danger rounded-pill">Not Active</span>
-                <?php endif; ?>
-              </p>
-              <p class="fw-medium" style="font-size: 14px;">Rp.<?= number_format($row['price'], 2, ',', '.') ?></p>
-              <button class="btn btn-dark btn-sm add-to-cart w-100" data-id="<?= $row['id'] ?>" data-name="<?= $row['name'] ?>" data-price="<?= $row['price'] ?>"><i class="bi bi-cart4"></i> Add to Cart</button>
+    <?php if (mysqli_num_rows($result) > 0): ?>
+      <!-- Product Cards -->
+      <div class="row row-cols-lg-6 row-cols-md-4 row-cols-2">
+        <?php while ($row = mysqli_fetch_assoc($result)) { ?>
+          <div class="col-lg-2 col-md-4 col-6 mb-3">
+            <div class="card h-100 border-0 shadow-sm">
+              <img src="../images/product/<?= $row['image'] ?>" class="card-img-top" alt="<?= $row['name'] ?>">
+              <div class="card-body">
+                <h5 class="fw-semibold" style="font-size: 14px;"><?= $row['name'] ?></h5>
+                <p>
+                  <span class="badge bg-secondary rounded-pill"><?= $row['category'] ?></span>
+                  <?php if ($row['active'] == 1): ?>
+                    <span class="badge bg-success rounded-pill">Active</span>
+                  <?php else : ?>
+                    <span class="badge bg-danger rounded-pill">Not Active</span>
+                  <?php endif; ?>
+                </p>
+                <p class="fw-medium" style="font-size: 14px;">Rp.<?= number_format($row['price'], 2, ',', '.') ?></p>
+                <button class="btn btn-dark btn-sm add-to-cart w-100"
+                  data-id="<?= $row['id'] ?>"
+                  data-name="<?= $row['name'] ?>"
+                  data-price="<?= $row['price'] ?>">
+                  <i class="bi bi-cart4"></i> Add to Cart
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      <?php } ?>
-    </div>
+        <?php } ?>
+      </div>
+    <?php else: ?>
+      <div class="alert alert-warning text-center mt-4" role="alert">
+        Produk tidak ditemukan.
+      </div>
+    <?php endif; ?>
+
     <!-- END Product Cards -->
   </main>
 
