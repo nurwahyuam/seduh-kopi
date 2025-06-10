@@ -1,27 +1,36 @@
 <?php
+// Mulai session
 session_start();
 
+// Ambil nama file saat ini
 $current_page = basename($_SERVER['PHP_SELF']);
 
+// Cek jika role tidak terdaftar, redirect ke halaman login
 if (!isset($_SESSION['role'])) {
   header("Location: ../login.php");
   exit;
-} elseif ($_SESSION['role'] === 'user') {
+} 
+// Jika role adalah user, redirect ke halaman user
+elseif ($_SESSION['role'] === 'user') {
   header("Location: ../user/index.php");
   exit;
 }
 
+// Include koneksi database
 include '../database/db.php';
 
-$limit = 4;
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$offset = ($page - 1) * $limit;
+// Konfigurasi pagination
+$limit = 4; // Jumlah data per halaman
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1; // Halaman saat ini
+$offset = ($page - 1) * $limit; // Hitung offset
 
+// Ambil parameter search jika ada
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $search_param = "%{$search}%";
 
-// Hitung total order
+// Hitung total order (dengan atau tanpa search)
 if ($search) {
+  // Jika ada search, hitung total dengan filter
   $stmt_count = $conn->prepare("
     SELECT COUNT(DISTINCT o.id) AS total
     FROM orders o
@@ -32,16 +41,19 @@ if ($search) {
   $stmt_count->execute();
   $count_result = $stmt_count->get_result();
 } else {
+  // Jika tidak ada search, hitung semua order
   $count_result = $conn->query("SELECT COUNT(DISTINCT o.id) AS total FROM orders o");
 }
 
+// Ambil total order dan hitung total halaman
 $total_row = $count_result->fetch_assoc();
 $total_orders = $total_row['total'];
 $total_pages = ceil($total_orders / $limit);
 
-// Ambil ID order
+// Ambil ID order dengan pagination (dengan atau tanpa search)
 $order_ids = [];
 if ($search) {
+  // Jika ada search, ambil ID dengan filter
   $stmt_ids = $conn->prepare("
     SELECT DISTINCT o.id
     FROM orders o
@@ -54,17 +66,21 @@ if ($search) {
   $stmt_ids->execute();
   $result_ids = $stmt_ids->get_result();
 } else {
+  // Jika tidak ada search, ambil semua ID
   $result_ids = $conn->query("SELECT id FROM orders ORDER BY created_at DESC LIMIT $limit OFFSET $offset");
 }
 
+// Simpan ID order ke dalam array
 while ($row = $result_ids->fetch_assoc()) {
   $order_ids[] = $row['id'];
 }
 
+// Ambil detail order berdasarkan ID yang sudah difilter
 $orders = [];
 if (!empty($order_ids)) {
   $id_list = implode(',', $order_ids);
 
+  // Query untuk mengambil detail order termasuk itemnya
   $sql = "SELECT 
             o.id AS order_id, o.user_id, o.created_at, o.total_amount, o.status,
             oi.product_id, oi.quantity, oi.price,
@@ -79,6 +95,7 @@ if (!empty($order_ids)) {
 
   $result = $conn->query($sql);
 
+  // Format data order ke dalam array asosiatif
   if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
       $order_id = $row['order_id'];
@@ -94,6 +111,7 @@ if (!empty($order_ids)) {
         ];
       }
 
+      // Tambahkan item produk jika ada
       if (!is_null($row['product_name'])) {
         $orders[$order_id]['items'][] = [
           'product_name' => $row['product_name'],
@@ -105,6 +123,7 @@ if (!empty($order_ids)) {
   }
 }
 
+// Hitung notifikasi yang belum dibaca
 $userId = $_SESSION['id'];
 $query = mysqli_query($conn, "SELECT COUNT(*) AS unread FROM notifications WHERE user_id = $userId AND is_read = 0");
 $data = mysqli_fetch_assoc($query);
@@ -116,6 +135,7 @@ $unreadCount = $data['unread'];
 
 <head>
   <?php
+  // Include meta dan CSS
   $title = 'Orders';
   $link = '../assets/img/favicon.ico';
   $css = '../css/style.css';
@@ -127,6 +147,7 @@ $unreadCount = $data['unread'];
 <body>
   <div class="d-flex vh-100">
     <?php
+    // Data untuk navigasi sidebar
     $navlink = [
       [
         'file' => 'dashboard.php',
@@ -167,6 +188,7 @@ $unreadCount = $data['unread'];
     include '../includes/components/navbar_sider.php'
     ?>
 
+    <!-- Konten utama -->
     <div id="box" class="w-100 bg-light py-3 px-4">
       <?php include '../includes/components/nav_side.php' ?>
 
@@ -174,6 +196,7 @@ $unreadCount = $data['unread'];
         <div class="d-flex align-items-center justify-content-between">
           <h1 class="fs-4 fw-bold">Daftar Orders</h1>
           <div class="w-25">
+            <!-- Form search -->
             <form method="GET" action="" class="d-flex align-items-center gap-2">
               <input type="text" name="search" class="form-control form-control-sm" placeholder="Search ..." value="<?= htmlspecialchars($search) ?>">
               <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-search"></i></button>
@@ -184,6 +207,7 @@ $unreadCount = $data['unread'];
           </div>
         </div>
         <hr>
+        <!-- Tabel order -->
         <table class="mt-2 table table-bordered">
           <thead>
             <tr>
@@ -205,6 +229,7 @@ $unreadCount = $data['unread'];
                   <td class="" style=" vertical-align: middle;">
                     <ul class="m-0 ps-3">
                       <?php
+                      // Tampilkan maksimal 2 item produk
                       $limitList = 1;
                       foreach ($order['items'] as $item):
                         if ($limitList <= 2): ?>
@@ -228,6 +253,7 @@ $unreadCount = $data['unread'];
                     <?php endif; ?>
                   </td>
                   <td class="text-center" style="vertical-align: middle;">
+                    <!-- Tombol action -->
                     <a onclick='showOrderDetail(<?= json_encode($order, JSON_HEX_TAG | JSON_HEX_APOS); ?>)' class="btn btn-warning btn-sm text-white"><i class="bi bi-eye-fill"></i></a>
                     <a href="../includes/delete_order.php?id=<?= $order['order_id'] ?>" onclick="return confirm('Yakin hapus?')" class="btn btn-danger btn-sm "><i class="bi bi-trash-fill"></i></a>
                   </td>
@@ -249,7 +275,7 @@ $unreadCount = $data['unread'];
 
   <?php include '../includes/components/toast.php' ?>
 
-  <!-- Modal Detail Order -->
+  <!-- Modal untuk menampilkan detail order -->
   <div class="modal fade" id="modalDetailOrder" tabindex="-1" aria-labelledby="modalDetailOrderLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
       <div class="modal-content">
@@ -268,7 +294,7 @@ $unreadCount = $data['unread'];
           <hr>
           <h6>Produk Dipesan:</h6>
           <ul class="list-group" id="modalOrderItems">
-            <!-- Produk akan dimasukkan lewat JS -->
+            <!-- Daftar produk akan diisi oleh JavaScript -->
           </ul>
         </div>
         <div class="modal-footer d-flex align-items-center justify-content-between">
@@ -280,6 +306,7 @@ $unreadCount = $data['unread'];
   </div>
 
   <script>
+    // Fungsi untuk menandai notifikasi sebagai sudah dibaca
     document.getElementById('notifButton').addEventListener('click', function() {
       fetch('../includes/mark_read.php')
         .then(response => response.json())
@@ -293,6 +320,8 @@ $unreadCount = $data['unread'];
         })
         .catch(error => console.error("Gagal menghubungi server:", error));
     });
+    
+    // Fungsi untuk menampilkan toast message
     document.addEventListener("DOMContentLoaded", function() {
       const toastMsg = sessionStorage.getItem("toastMessage");
       if (toastMsg) {
@@ -309,6 +338,7 @@ $unreadCount = $data['unread'];
       }
     });
 
+    // Fungsi untuk menutup sidebar
     function closeBar() {
       sidebar.classList.remove("w-25");
       sidebar.style.width = "8vh";
@@ -318,6 +348,7 @@ $unreadCount = $data['unread'];
       box.style.width = "calc(100% - 65px)";
     }
 
+    // Fungsi untuk membuka sidebar
     function openBar() {
       sidebar.classList.add("w-25");
       sidebar.style.width = "";
@@ -327,6 +358,7 @@ $unreadCount = $data['unread'];
       box.classList.add("w-75");
     }
 
+    // Fungsi untuk menampilkan detail order di modal
     function showOrderDetail(order) {
       document.getElementById("modalOrderId").innerText = order.order_id;
       document.getElementById("modalOrderDate").innerText = order.created_at
@@ -336,6 +368,7 @@ $unreadCount = $data['unread'];
       status.innerText = order.status;
       status.className = "badge";
 
+      // Set warna badge berdasarkan status
       if (order.status === 'pending') {
         status.classList.add('bg-info');
       } else if (order.status === 'paid') {
@@ -347,6 +380,7 @@ $unreadCount = $data['unread'];
       const itemList = document.getElementById("modalOrderItems");
       itemList.innerHTML = "";
 
+      // Tambahkan item produk ke modal
       if (order.items.length > 0) {
         order.items.forEach(item => {
           const li = document.createElement("li");
@@ -361,12 +395,14 @@ $unreadCount = $data['unread'];
         itemList.appendChild(li);
       }
 
+      // Tampilkan modal
       const modal = new bootstrap.Modal(document.getElementById("modalDetailOrder"));
       modal.show();
     }
   </script>
 
   <?php
+  // Include script JavaScript
   $bootstrap = '../bootstrap/js/bootstrap.bundle.min.js';
   $js = '';
   include '../includes/script.php'

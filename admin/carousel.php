@@ -1,25 +1,34 @@
 <?php
+// Memulai session
 session_start();
 
+// Mengambil nama file saat ini
 $current_page = basename($_SERVER['PHP_SELF']);
 
+// Pengecekan role user
 if (!isset($_SESSION['role'])) {
+  // Jika tidak ada session role, redirect ke halaman login
   header("Location: ../login.php");
   exit;
 } else if (isset($_SESSION['role']) && $_SESSION['role'] === 'user') {
+  // Jika role adalah user, redirect ke halaman user
   header("Location: ../user/index.php");
   exit;
 }
 
+// Menghubungkan ke database
 include '../database/db.php';
 
-$limit = 5;
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$offset = ($page - 1) * $limit;
+// Konfigurasi pagination
+$limit = 5; // Jumlah data per halaman
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1; // Halaman saat ini
+$offset = ($page - 1) * $limit; // Hitung offset untuk query
 
+// Pencarian data
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $search_param = "%{$search}%";
 
+// Query untuk menghitung total data (dengan/s tanpa pencarian)
 if ($search) {
   $count_sql = "SELECT COUNT(*) AS total FROM carousel WHERE title LIKE ?";
   $stmt_count = $conn->prepare($count_sql);
@@ -30,10 +39,12 @@ if ($search) {
   $count_result = $conn->query("SELECT COUNT(*) AS total FROM carousel");
 }
 
+// Hitung total halaman
 $total_row = $count_result->fetch_assoc();
 $total_users = $total_row['total'];
 $total_pages = ceil($total_users / $limit);
 
+// Query untuk mengambil data carousel (dengan/s tanpa pencarian)
 if ($search) {
   $sql = "SELECT * FROM carousel WHERE title LIKE ? LIMIT ?, ?";
   $stmt = $conn->prepare($sql);
@@ -47,6 +58,7 @@ if ($search) {
 $stmt->execute();
 $result = $stmt->get_result();
 
+// Query untuk menghitung notifikasi yang belum dibaca
 $userId = $_SESSION['id'];
 $query = mysqli_query($conn, "SELECT COUNT(*) AS unread FROM notifications WHERE user_id = $userId AND is_read = 0");
 $data = mysqli_fetch_assoc($query);
@@ -58,6 +70,7 @@ $unreadCount = $data['unread'];
 
 <head>
   <?php
+  // Include bagian head
   $title = 'Carousel';
   $link = '../assets/img/favicon.ico';
   $css = '../css/style.css';
@@ -69,6 +82,7 @@ $unreadCount = $data['unread'];
 <body>
   <div class="d-flex vh-100">
     <?php
+    // Navigasi sidebar
     $navlink = [
       [
         'file' => 'dashboard.php',
@@ -109,11 +123,12 @@ $unreadCount = $data['unread'];
     include '../includes/components/navbar_sider.php'
     ?>
 
-    <!-- MAIN CONTENT -->
+    <!-- KONTEN UTAMA -->
     <div id="box" class="w-100 bg-light py-3 px-4">
       <?php include '../includes/components/nav_side.php' ?>
 
       <div class="border shadow rounded-2 p-4">
+        <!-- Header dan Search -->
         <div class="d-flex align-items-center justify-content-between">
           <h1 class="fs-4 fw-bold">Daftar Carousels</h1>
           <div class="d-flex align-items-center justify-content-end gap-2">
@@ -128,6 +143,8 @@ $unreadCount = $data['unread'];
           </div>
         </div>
         <hr>
+        
+        <!-- Tabel Data Carousel -->
         <table class="mt-2 table table-bordered ">
           <thead>
             <tr>
@@ -179,6 +196,7 @@ $unreadCount = $data['unread'];
 
   <?php include '../includes/components/toast.php' ?>
 
+  <!-- Modal Edit Carousel -->
   <div class="modal fade" id="modalEditCarousel" tabindex="-1" aria-labelledby="modalEditCarouselLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
       <form id="editCarouselForm" method="POST" action="../includes/update_carousel.php" enctype="multipart/form-data">
@@ -232,7 +250,7 @@ $unreadCount = $data['unread'];
     </div>
   </div>
 
-
+  <!-- Modal Create Carousel -->
   <div class="modal fade" id="modalCreateCarousel" tabindex="-1" aria-labelledby="modalCreateCarouselLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
       <form id="createCarouselForm" method="POST" action="../includes/create_carousel.php" enctype="multipart/form-data">
@@ -284,8 +302,8 @@ $unreadCount = $data['unread'];
     </div>
   </div>
 
-
   <script>
+    // Fungsi untuk menandai notifikasi sebagai sudah dibaca
     document.getElementById('notifButton').addEventListener('click', function() {
       fetch('../includes/mark_read.php')
         .then(response => response.json())
@@ -299,6 +317,8 @@ $unreadCount = $data['unread'];
         })
         .catch(error => console.error("Gagal menghubungi server:", error));
     });
+    
+    // Fungsi untuk menampilkan toast notifikasi
     document.addEventListener("DOMContentLoaded", function() {
       const toastMsg = sessionStorage.getItem("toastMessage");
       if (toastMsg) {
@@ -315,6 +335,7 @@ $unreadCount = $data['unread'];
       }
     });
 
+    // Fungsi untuk mengatur sidebar
     const sidebar = document.getElementById("sidebar");
     const sidebarBig = document.getElementById("sidebarBig");
     const sidebarSmall = document.getElementById("sidebarSmall");
@@ -337,6 +358,7 @@ $unreadCount = $data['unread'];
       box.classList.add("w-75");
     }
 
+    // Fungsi untuk menampilkan modal edit carousel
     function showEditCarouselModal(car) {
       document.getElementById("editId").value = car.id;
       document.getElementById("editTitle").value = car.title;
@@ -350,6 +372,7 @@ $unreadCount = $data['unread'];
       modal.show();
     }
 
+    // Fungsi untuk menampilkan modal create carousel
     function showCreateCarouselModal() {
       document.getElementById('createCarouselForm').reset();
 
@@ -379,6 +402,7 @@ $unreadCount = $data['unread'];
   </script>
 
   <?php
+  // Include script
   $bootstrap = '../bootstrap/js/bootstrap.bundle.min.js';
   $js = '';
   include '../includes/script.php'
