@@ -119,7 +119,7 @@ if (isset($_SESSION['role'])) {
     </section>
 
     <!-- TOAST NOTIFICATION -->
-    <?php include '../includes/components/toast.php' ?>
+    <?php include 'includes/components/toast.php' ?>
 
     <!-- FOOTER -->
     <?php

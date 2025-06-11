@@ -117,7 +117,7 @@ $dataOrders = mysqli_fetch_assoc($queryOrders);
     </section>
 
     <!-- TOAST NOTIFICATION -->
-    <?php include 'includes/components/toast.php' ?>
+    <?php include '../includes/components/toast.php' ?>
 
     <?php
     $link = "../assets/logo.png";
