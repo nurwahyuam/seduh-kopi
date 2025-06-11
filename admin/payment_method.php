@@ -20,7 +20,7 @@ elseif ($_SESSION['role'] === 'user') {
 include '../database/db.php';
 
 // Konfigurasi pagination
-$limit = 9; // Jumlah data per halaman
+$limit = 4; // Jumlah data per halaman
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1; // Halaman saat ini
 $offset = ($page - 1) * $limit; // Hitung offset
 

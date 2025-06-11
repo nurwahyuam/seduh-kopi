@@ -15,7 +15,7 @@ if (!isset($_SESSION['role'])) {
 include '../database/db.php'; // Menghubungkan ke database
 
 // Pagination setup
-$limit = 6;
+$limit = 4;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $limit;
 
