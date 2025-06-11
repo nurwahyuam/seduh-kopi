@@ -2,11 +2,11 @@
 session_start();
 
 if (!isset($_SESSION['role'])) {
-  header("Location: ../login.php");
-  exit;
+    header("Location: ../login.php");
+    exit;
 } else if ($_SESSION['role'] === 'admin') {
-  header("Location: ../admin/dashboard.php");
-  exit;
+    header("Location: ../admin/dashboard.php");
+    exit;
 }
 
 include '../database/db.php';
@@ -63,15 +63,15 @@ $dataOrders = mysqli_fetch_assoc($queryOrders);
                         <h3 class="fw-bold mb-4">Informasi Kontak</h3>
                         <ul class="list-unstyled">
                             <li class="mb-3">
-                                <i class="bi bi-geo-alt-fill text-dark me-2"></i> 
+                                <i class="bi bi-geo-alt-fill text-dark me-2"></i>
                                 <span>Jl. Rungkut Madya, Rungkut, Surabaya</span>
                             </li>
                             <li class="mb-3">
-                                <i class="bi bi-telephone-fill text-dark me-2"></i> 
+                                <i class="bi bi-telephone-fill text-dark me-2"></i>
                                 <span>0812-3456-789</span>
                             </li>
                             <li class="mb-3">
-                                <i class="bi bi-envelope-fill text-dark me-2"></i> 
+                                <i class="bi bi-envelope-fill text-dark me-2"></i>
                                 <span>admin@gmail.com</span>
                             </li>
                         </ul>
@@ -82,7 +82,9 @@ $dataOrders = mysqli_fetch_assoc($queryOrders);
                 <div class="col-md-6">
                     <div class="p-4 bg-white rounded-4 shadow">
                         <h3 class="fw-bold mb-4">Formulir Pesan</h3>
-                        <form action="proses.php" method="POST">
+                        <!-- Form akan diproses di proses_pesan.php -->
+                        <form action="../includes/proses_pesan.php" method="POST">
+                            <!-- Baris Nama (First Name + Last Name) -->
                             <div class="row mb-3">
                                 <div class="col">
                                     <input type="text" name="first_name" class="form-control" placeholder="First Name" required>
@@ -91,17 +93,21 @@ $dataOrders = mysqli_fetch_assoc($queryOrders);
                                     <input type="text" name="last_name" class="form-control" placeholder="Last Name" required>
                                 </div>
                             </div>
+                            <!-- Input Email -->
                             <div class="mb-3">
                                 <input type="email" name="email" class="form-control" placeholder="Email" required>
                             </div>
+                            <!-- Input Nomor Telepon -->
                             <div class="mb-3">
                                 <input type="text" name="phone" class="form-control" placeholder="Phone Number">
                             </div>
+                            <!-- Textarea Pesan -->
                             <div class="mb-3">
                                 <textarea name="message" class="form-control" rows="4" placeholder="Message" required></textarea>
                             </div>
+                            <!-- Tombol Submit -->
                             <div class="d-grid">
-                                <button type="submit" class="btn btn-dark fw-semibold">Send</button>
+                                <button type="submit" class="btn btn-dark fw-semibold">Kirim Pesan</button>
                             </div>
                         </form>
                     </div>
@@ -109,6 +115,9 @@ $dataOrders = mysqli_fetch_assoc($queryOrders);
             </div>
         </div>
     </section>
+
+    <!-- TOAST NOTIFICATION -->
+    <?php include 'includes/components/toast.php' ?>
 
     <?php
     $link = "../assets/logo.png";
@@ -119,6 +128,27 @@ $dataOrders = mysqli_fetch_assoc($queryOrders);
     ];
     include '../includes/footer.php';
     ?>
+
+    <!-- SCRIPT UNTUK TOAST NOTIFICATION -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Cek dan tampilkan pesan toast biasa
+            const toastMsg = sessionStorage.getItem("toastMessage");
+            if (toastMsg) {
+                document.getElementById("toastMessage").innerText = toastMsg;
+                new bootstrap.Toast(document.getElementById("liveToast")).show();
+                sessionStorage.removeItem("toastMessage");
+            }
+
+            // Cek dan tampilkan pesan toast untuk delete
+            const toastDeleteMsg = sessionStorage.getItem("toastMessageDelete");
+            if (toastDeleteMsg) {
+                document.getElementById("toastMessageDelete").innerText = toastDeleteMsg;
+                new bootstrap.Toast(document.getElementById("liveToastDelete")).show();
+                sessionStorage.removeItem("toastMessageDelete");
+            }
+        });
+    </script>
 
     <?php
     $bootstrap = '../bootstrap/js/bootstrap.bundle.min.js';
